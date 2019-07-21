@@ -1,11 +1,12 @@
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const mergeWebpack = require('webpack-merge')
 
-module.exports = {
+const renderer = {
   mode: 'development',
+  target: 'electron-renderer',
   entry: {
-    react: './src/index.tsx',
-    electron: './src/main.ts',
+    renderer: './src/index.tsx',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -33,4 +34,27 @@ module.exports = {
       template: './src/index.html',
     }),
   ],
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          test: /node_modules/,
+          name: 'vendor',
+          chunks: 'initial',
+          enforce: true,
+        },
+      },
+    },
+  },
 }
+
+const main = mergeWebpack(renderer, {
+  target: 'electron-main',
+  entry: {
+    main: './src/main.ts',
+  },
+  plugins: [],
+})
+
+module.exports = [renderer, main]
+
